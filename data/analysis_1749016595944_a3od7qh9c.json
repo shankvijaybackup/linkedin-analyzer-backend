@@ -1,0 +1,579 @@
+{
+  "status": "completed",
+  "progress": 100,
+  "stage": "Analysis Complete",
+  "data": {
+    "profile": {
+      "name": "Joseph Rabbia",
+      "title": "Head of Information Technology for Investment Banking at Jefferies",
+      "company": "Jefferies",
+      "location": "Oradell, US",
+      "summary": "•\tExecutive with expertise in IT strategy and implementing digital transformation to maximize enterprise-wide success.  \n•\tSuccessful track record of planning, designing, and executing customer-centric solutions.  \n•\tConsistently deliver effective application development solutions.  Possess strong experience in business intelligence and CRM. \n•\tPossess strong interpersonal skills and experience in establishing high-value relationships with senior business leaders, industry experts, and vendors. \n•\tManage budgets, projects, and staff (20 - 250 employees and vendors/consultants). \n•\tDevelop highly successful teams with a common goal. Active role in mentoring programs.\n•\tPassionate about technology. Experienced speaker/advisor.",
+      "expertise": [],
+      "certifications": [],
+      "experience": [
+        {
+          "title": "Head of Information Technology for Investment Banking",
+          "company": "Jefferies",
+          "duration": "2020 - Present",
+          "description": "Head of Information Technology for Investment Banking at Jefferies",
+          "location": "New York City Metropolitan Area"
+        },
+        {
+          "title": "Art of a Conversation Creator",
+          "company": "Art of a Conversation, LLC",
+          "duration": "2020 - 2020",
+          "description": "Created website that creates art from words using NLP, Word Embeddings, Dimension Reduction, Fourier Transform and Epicycle drawings in P5.js to create a piece of art by connecting the dots of words through 2-dimension space.  \n\nTry it yourself at: \nhttps://www.artofaconversation.com\n\nVisit ArtConversation's shop, for cool artwork on awesome products!\nhttps://www.redbubble.com/people/ArtConversation/explore?asc=u",
+          "location": "Greater New York Area"
+        },
+        {
+          "title": "IT Director - Head of Enterprise Data Strategy & Emerging Technologies",
+          "company": "Lazard",
+          "duration": "2018 - 2020",
+          "description": "IT Director - Head of Enterprise Data Strategy & Emerging Technologies at Lazard",
+          "location": "Greater New York City Area"
+        },
+        {
+          "title": "Head of Information Technology for Global Investment Banking",
+          "company": "Lazard",
+          "duration": "2015 - 2018",
+          "description": "Head of Information Technology for Global Investment Banking at Lazard",
+          "location": "Greater New York City Area"
+        },
+        {
+          "title": "iOS Game Developer",
+          "company": "Self Employed",
+          "duration": "2014 - 2015",
+          "description": "Teaming up with my daughters who wanted to learn about coding we built 3 games for iPhone/iPad all available on the App Store.\n\nMoo The Monkey\nAlphaMoo\nTriviaMoo",
+          "location": "Greater New York City Area"
+        }
+      ],
+      "education": [
+        {
+          "school": "The College of New Jersey",
+          "degree": "BA",
+          "field": "Mathematics",
+          "duration": "1989 - 1993"
+        }
+      ],
+      "connections": 920,
+      "followerCount": 960
+    },
+    "company": {
+      "linkedin_internal_id": "5154",
+      "description": "Jefferies is a leading global, full-service investment banking and capital markets firm that provides advisory, sales and trading, research and wealth and asset management services. With more than 40 offices around the world, we offer insights and expertise to investors, companies and governments.\n\nMore about our company can be found at www.jefferies.com.",
+      "website": "http://Jefferies.com",
+      "industry": "Investment Banking",
+      "company_size": [
+        5001,
+        10000
+      ],
+      "company_size_on_linkedin": 7625,
+      "hq": {
+        "country": "US",
+        "city": "New York City",
+        "postal_code": "10022",
+        "line_1": "520 Madison Avenue, 10th Floor",
+        "is_hq": true,
+        "state": "New York"
+      },
+      "company_type": "PUBLIC_COMPANY",
+      "founded_year": 1962,
+      "specialities": [
+        "Investment Banking",
+        "Fixed Income",
+        "Equities",
+        "Research & Strategy",
+        "Wealth Management",
+        "Financial Services"
+      ],
+      "locations": [
+        {
+          "country": "US",
+          "city": "New York City",
+          "postal_code": "10022",
+          "line_1": "520 Madison Avenue, 10th Floor",
+          "is_hq": true,
+          "state": "New York"
+        },
+        {
+          "country": "GB",
+          "city": "London",
+          "postal_code": "EC2N 4JL",
+          "line_1": "100 Bishopsgate",
+          "is_hq": false,
+          "state": "England"
+        },
+        {
+          "country": "HK",
+          "city": "Central, Hong Kong",
+          "postal_code": null,
+          "line_1": "Cheung Kong Center",
+          "is_hq": false,
+          "state": null
+        },
+        {
+          "country": "US",
+          "city": "Miami",
+          "postal_code": "33131",
+          "line_1": "1450 Brickell Ave",
+          "is_hq": false,
+          "state": "FL"
+        },
+        {
+          "country": "US",
+          "city": "New York",
+          "postal_code": "10022",
+          "line_1": "520 Madison Ave",
+          "is_hq": false,
+          "state": "NY"
+        },
+        {
+          "country": "US",
+          "city": "Atlanta",
+          "postal_code": null,
+          "line_1": null,
+          "is_hq": false,
+          "state": "Georgia"
+        },
+        {
+          "country": "US",
+          "city": "Boston",
+          "postal_code": null,
+          "line_1": null,
+          "is_hq": false,
+          "state": "Massachusetts"
+        },
+        {
+          "country": "US",
+          "city": "Chicago",
+          "postal_code": null,
+          "line_1": null,
+          "is_hq": false,
+          "state": "Illinois"
+        },
+        {
+          "country": "US",
+          "city": "Dallas",
+          "postal_code": null,
+          "line_1": null,
+          "is_hq": false,
+          "state": "Texas"
+        },
+        {
+          "country": "US",
+          "city": "Charlotte",
+          "postal_code": null,
+          "line_1": null,
+          "is_hq": false,
+          "state": "North Carolina"
+        },
+        {
+          "country": "US",
+          "city": "Jersey City",
+          "postal_code": null,
+          "line_1": null,
+          "is_hq": false,
+          "state": "New Jersey"
+        },
+        {
+          "country": "US",
+          "city": "Nashville",
+          "postal_code": null,
+          "line_1": null,
+          "is_hq": false,
+          "state": "Tennessee"
+        },
+        {
+          "country": "US",
+          "city": "Red Bank",
+          "postal_code": null,
+          "line_1": null,
+          "is_hq": false,
+          "state": "New Jersey"
+        },
+        {
+          "country": "US",
+          "city": "San Francisco",
+          "postal_code": null,
+          "line_1": null,
+          "is_hq": false,
+          "state": "California"
+        },
+        {
+          "country": "CA",
+          "city": "Toronto",
+          "postal_code": null,
+          "line_1": null,
+          "is_hq": false,
+          "state": null
+        },
+        {
+          "country": "BR",
+          "city": "São Paulo",
+          "postal_code": null,
+          "line_1": null,
+          "is_hq": false,
+          "state": null
+        },
+        {
+          "country": "AE",
+          "city": "Dubai",
+          "postal_code": null,
+          "line_1": null,
+          "is_hq": false,
+          "state": null
+        },
+        {
+          "country": "PT",
+          "city": "Lisbon",
+          "postal_code": null,
+          "line_1": null,
+          "is_hq": false,
+          "state": null
+        },
+        {
+          "country": "IT",
+          "city": "Milan",
+          "postal_code": null,
+          "line_1": null,
+          "is_hq": false,
+          "state": null
+        },
+        {
+          "country": "IT",
+          "city": "Rome",
+          "postal_code": null,
+          "line_1": null,
+          "is_hq": false,
+          "state": null
+        },
+        {
+          "country": "IL",
+          "city": "Tel Aviv",
+          "postal_code": null,
+          "line_1": null,
+          "is_hq": false,
+          "state": null
+        },
+        {
+          "country": "CH",
+          "city": "Zurich",
+          "postal_code": null,
+          "line_1": null,
+          "is_hq": false,
+          "state": null
+        },
+        {
+          "country": "AU",
+          "city": "Sydney",
+          "postal_code": null,
+          "line_1": null,
+          "is_hq": false,
+          "state": null
+        },
+        {
+          "country": "KR",
+          "city": "Seoul",
+          "postal_code": null,
+          "line_1": null,
+          "is_hq": false,
+          "state": null
+        },
+        {
+          "country": "IN",
+          "city": "Mumbai ",
+          "postal_code": null,
+          "line_1": null,
+          "is_hq": false,
+          "state": null
+        },
+        {
+          "country": "CN",
+          "city": "Beijing",
+          "postal_code": null,
+          "line_1": null,
+          "is_hq": false,
+          "state": null
+        },
+        {
+          "country": "AU",
+          "city": "Melbourne",
+          "postal_code": null,
+          "line_1": null,
+          "is_hq": false,
+          "state": null
+        }
+      ],
+      "name": "Jefferies",
+      "tagline": "Jefferies, the global investment banking firm serving clients for more than 60 years.",
+      "universal_name_id": "jefferies",
+      "profile_pic_url": "https://s3.us-west-000.backblazeb2.com/proxycurl/company/jefferies/profile?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=0004d7f56a0400b0000000001%2F20250604%2Fus-west-000%2Fs3%2Faws4_request&X-Amz-Date=20250604T055637Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=5daae575ed9ba1cf605e1f7577f2f40dd86fc024da0bac8b5a8cbfda6a588f9a",
+      "background_cover_image_url": "https://s3.us-west-000.backblazeb2.com/proxycurl/company/jefferies/cover?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=0004d7f56a0400b0000000001%2F20250604%2Fus-west-000%2Fs3%2Faws4_request&X-Amz-Date=20250604T055637Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=77cd5f2f6c5ceabb19ebcc7d8239827cbdb95db57f298d8401dc00320c25d54e",
+      "search_id": "5154",
+      "similar_companies": [
+        {
+          "name": "Lazard",
+          "link": "https://www.linkedin.com/company/lazard/",
+          "industry": "Financial Services",
+          "location": null
+        },
+        {
+          "name": "Evercore",
+          "link": "https://www.linkedin.com/company/evercore-inc/",
+          "industry": "Investment Banking",
+          "location": null
+        },
+        {
+          "name": "Moelis & Company",
+          "link": "https://www.linkedin.com/company/moelis-&-company/",
+          "industry": "Investment Banking",
+          "location": null
+        },
+        {
+          "name": "Goldman Sachs",
+          "link": "https://www.linkedin.com/company/goldman-sachs/",
+          "industry": "Financial Services",
+          "location": null
+        },
+        {
+          "name": "Houlihan Lokey",
+          "link": "https://www.linkedin.com/company/houlihan-lokey/",
+          "industry": "Investment Banking",
+          "location": null
+        },
+        {
+          "name": "Morgan Stanley",
+          "link": "https://www.linkedin.com/company/morgan-stanley/",
+          "industry": "Financial Services",
+          "location": null
+        },
+        {
+          "name": "Rothschild & Co",
+          "link": "https://www.linkedin.com/company/rothschildandco/",
+          "industry": "Financial Services",
+          "location": null
+        },
+        {
+          "name": "Citi",
+          "link": "https://www.linkedin.com/company/citi/",
+          "industry": "Financial Services",
+          "location": null
+        },
+        {
+          "name": "UBS",
+          "link": "https://www.linkedin.com/company/ubs/",
+          "industry": "Financial Services",
+          "location": null
+        },
+        {
+          "name": "JPMorganChase",
+          "link": "https://www.linkedin.com/company/jpmorganchase/",
+          "industry": "Financial Services",
+          "location": null
+        },
+        {
+          "name": "Bank of America",
+          "link": "https://www.linkedin.com/company/bank-of-america/",
+          "industry": "Banking",
+          "location": null
+        },
+        {
+          "name": "Deutsche Bank",
+          "link": "https://www.linkedin.com/company/deutsche-bank/",
+          "industry": "Financial Services",
+          "location": null
+        },
+        {
+          "name": "Blackstone",
+          "link": "https://www.linkedin.com/company/blackstoneinc/",
+          "industry": "Financial Services",
+          "location": null
+        },
+        {
+          "name": "BlackRock",
+          "link": "https://www.linkedin.com/company/blackrock/",
+          "industry": "Financial Services",
+          "location": null
+        },
+        {
+          "name": "Centerview Partners",
+          "link": "https://www.linkedin.com/company/centerview-partners/",
+          "industry": "Investment Banking",
+          "location": null
+        },
+        {
+          "name": "PJT Partners",
+          "link": "https://www.linkedin.com/company/pjt-partners/",
+          "industry": "Investment Banking",
+          "location": null
+        },
+        {
+          "name": "J.P. Morgan",
+          "link": "https://www.linkedin.com/company/jpmorgan/",
+          "industry": "Financial Services",
+          "location": null
+        },
+        {
+          "name": "Barclays",
+          "link": "https://www.linkedin.com/company/barclays-bank/",
+          "industry": "Financial Services",
+          "location": null
+        },
+        {
+          "name": "KKR",
+          "link": "https://www.linkedin.com/company/kkr/",
+          "industry": "Financial Services",
+          "location": null
+        },
+        {
+          "name": "Piper Sandler",
+          "link": "https://www.linkedin.com/company/pipersandler/",
+          "industry": "Financial Services",
+          "location": null
+        }
+      ],
+      "affiliated_companies": [],
+      "updates": [
+        {
+          "article_link": "https://www.linkedin.com/posts/jefferies_teamjef-activity-7332480627545432067-Tbwy",
+          "image": "https://media.licdn.com/dms/image/v2/D4E10AQFfQEbPw7liPA/image-shrink_1280/B4EZcI0PO4HkAM-/0/1748199602032?e=1748851200&v=beta&t=ZYGF3hWpoGCDIRipgrEGTiiBaZumZeqPiIK8Yg4A3yc",
+          "posted_on": {
+            "day": 25,
+            "month": 5,
+            "year": 2025
+          },
+          "text": "We are pleased to welcome Vivian Li, who joins Jefferies as Head of Asia Distressed Trading and Asia Analytics, based in Hong Kong.\n\nHer expertise covering Sovereign, IG, and HY corporate credit and financials will further strengthen our Fixed Income capabilities. \n\nVivian was most recently Head of Asia Credit Analytics and Head of China Financing at Morgan Stanley.\n\nWelcome, Vivian! #TeamJef",
+          "total_likes": 97
+        },
+        {
+          "article_link": "https://www.linkedin.com/posts/jefferies_at-this-years-jefferies-private-growth-conference-activity-7332390030298005505-Elt9",
+          "image": "https://media.licdn.com/dms/image/v2/D4E10AQHUgMnIUFU4Pg/image-shrink_800/B4EZcHh1vaHAAg-/0/1748178001961?e=1748851200&v=beta&t=ZuFK6HdR3Nd9CvLBVaON91PeH5L6jKR7bPuzruNPncs",
+          "posted_on": {
+            "day": 25,
+            "month": 5,
+            "year": 2025
+          },
+          "text": "At this year’s Jefferies Private Growth Conference, dealmakers struck a tone of cautious optimism. Both sponsors and strategics are eager to transact, and with the right conditions, many expect activity to pick up. The question is whether recent volatility will get in the way.\n\nRead more here: http://spklr.io/6040hP6g",
+          "total_likes": 27
+        },
+        {
+          "article_link": "https://www.linkedin.com/posts/jefferies_jefferies-global-co-head-of-internet-investment-activity-7331997443082829824-wsl7",
+          "image": "https://media.licdn.com/dms/image/v2/D4E10AQHe1_BRJORCpg/image-shrink_800/B4EZcB8yJVHAAc-/0/1748084401929?e=1748851200&v=beta&t=5Z1FtMtkB89QtZIpxXjcoY9yTI4cauyuHAMYbtMIeek",
+          "posted_on": {
+            "day": 25,
+            "month": 5,
+            "year": 2025
+          },
+          "text": "Jefferies Global Co-Head of Internet Investment Banking Guarav Kittur closed out our 2025 Private Growth Conference with a fireside chat with CEO of AppLovin Adam Foroughi about going from a startup to a top performing NASDAQ stock.\n\nSee the full conversation here: http://spklr.io/6045h8Cd",
+          "total_likes": 35
+        },
+        {
+          "article_link": "https://www.linkedin.com/posts/jefferies_as-market-volatility-subsides-momentum-starts-activity-7331740752785383425-qsHf",
+          "image": "https://media.licdn.com/dms/image/v2/D4E10AQF4z52Soj_cbQ/image-shrink_480/B4EZb.TU2.GcAk-/0/1748023201883?e=1748851200&v=beta&t=JhYgOj4Jd_drJDz7Z5JAuhumJ6wXjwmpl9HvGXdp8nM",
+          "posted_on": {
+            "day": 24,
+            "month": 5,
+            "year": 2025
+          },
+          "text": "As market volatility subsides, momentum starts to build and the tech IPO window opens, as evidenced by important transactions like eToro’s last week. \n\nJimmy Williams, Jefferies' West Coast Head of Tech ECM, spoke to Bloomberg News and Business Insider about his outlook on the tech IPO market for the rest of 2025, noting that board conversations have become quite positive on the option to go public with backlog and risk appetite at the strongest level seen since 2021.\n\nBusiness Insider: http://spklr.io/6042hPmm\nBloomberg: http://spklr.io/6043hPmW",
+          "total_likes": 47
+        },
+        {
+          "article_link": "https://www.linkedin.com/posts/jefferies_jefferies-is-pleased-to-have-served-as-joint-activity-7330979498533818369-k3kq",
+          "image": "https://media.licdn.com/dms/image/v2/D4E10AQF0x_G34so5Bw/image-shrink_1280/B4EZbze.I7GQAM-/0/1747841705177?e=1748851200&v=beta&t=zKrLknKX3x0QeLfUVO5YrY6qF2qBi61uqNRbh3Wr7m8",
+          "posted_on": {
+            "day": 22,
+            "month": 5,
+            "year": 2025
+          },
+          "text": "Jefferies is pleased to have served as Joint Financial Advisor to West Star Aviation, LLC, a leading global aviation services company and portfolio company of The Sterling Group, on its exit to Greenbriar Equity Group, L.P..\n\nThis successful transaction marks Jefferies’ 79th deal in the aviation services sector since 2015, further solidifying Jefferies’ position as one of the leading investment banks for the aviation services industry.",
+          "total_likes": 159
+        },
+        {
+          "article_link": "https://www.linkedin.com/posts/jefferies_we-are-thrilled-to-be-named-israels-best-activity-7330868587533893635-Cjql",
+          "image": "https://media.licdn.com/dms/image/v2/D4E22AQFbzWDJMxfT4w/feedshare-shrink_800/B4EZbx6IZKHIAg-/0/1747815270767?e=1750896000&v=beta&t=7DBikPgP1ElhdOlr94mVAXmcwMsJmLcVMkRduVkNyKc",
+          "posted_on": {
+            "day": 22,
+            "month": 5,
+            "year": 2025
+          },
+          "text": "We are thrilled to be named “Israel's Best Investment Bank ECM” in Euromoney’s Awards for Excellence 2025. We’re proud to be recognized for demonstrating exceptional performance, innovation, and leadership in the financial services industry. \n\nWith team members strategically located in both Tel Aviv and New York, we have emerged as a true market leader – completing more transactions in Israel than any other Investment Bank. In 2024, we successfully advised on 22 Israeli transactions, mostly cross border, representing a total value of $12B across Capital Markets and M&A. \n\nThank you to our clients and friends for trusting Jefferies as your advisor!",
+          "total_likes": 81
+        }
+      ],
+      "follower_count": 482860,
+      "acquisitions": null,
+      "exit_data": null,
+      "extra": null,
+      "funding_data": [],
+      "categories": null,
+      "customer_list": null
+    },
+    "strategicSummary": "Based on comprehensive analysis of Joseph Rabbia's profile and role context, key strategic insights include:\n\n• **EXECUTIVE AUTHORITY**: Head of Information Technology for Investment Banking at Jefferies at Jefferies indicates high-level decision making power with significant budget influence for IT transformation initiatives\n\n• **INDUSTRY EXPERTISE**: Investment Banking background suggests sophisticated understanding of enterprise technology requirements and regulatory compliance needs\n\n• **SCALE CHALLENGES**: Head of Information Technology for Investment Banking at Jefferies role with 5,001,10,000 employees indicates pain points around operational efficiency, automation gaps, and service delivery optimization\n\n• **DIGITAL TRANSFORMATION MANDATE**: Senior IT leadership position suggests active involvement in modernization initiatives - ideal timing for AI-native ITSM solutions\n\n• **INTEGRATION FOCUS**: Executive experience across 5 organizations demonstrates preference for unified platforms over fragmented toolsets\n\n• **ROI ORIENTATION**: CIO level role requires measurable business impact and operational improvements through technology investments\n\n**COMPETITIVE POSITIONING**: Position Atomicwork as the AI-native alternative to legacy ITSM (ServiceNow era), emphasizing our generational advantage - built for the AI era (2020s) focused on end-users, not just IT agents and admins.\n\n**STRATEGIC RECOMMENDATION**: Lead with Digital AI capabilities, service workforce vision, and rapid deployment benefits. Emphasize how we enable lean IT teams to move fast vs. traditional complexity management approaches.",
+    "outreachMessages": [
+      {
+        "sender": "Vijay R",
+        "focus": "CEO - Generational Positioning",
+        "subject": "AI Era Service Management for Jefferies",
+        "message": "Hi Joseph Rabbia,\n\nImpressive background leading IT at Jefferies. Your experience across enterprise environments really stands out.\n\nWe're in the third generation of service management: ServiceNow (2000s admin era) → Jira/Fresh (2010s agent era) → Atomicwork (2020s AI era for end-users).\n\nMost cios tell us legacy ITSM creates complexity rather than simplicity. At Atomicwork, our singular mission is delivering a service workforce, not just workflows.\n\nWhat's your biggest operational challenge right now?\n\nBest regards,\nVijay"
+      },
+      {
+        "sender": "Kiran D",
+        "focus": "CTO - Digital AI Architecture",
+        "subject": "Digital AI vs Traditional ITSM",
+        "message": "Hi Joseph Rabbia,\n\nYour technical leadership at Jefferies caught my attention. The challenge of scaling IT operations while maintaining service quality is significant.\n\nTraditional ITSM tools force teams into rigid workflows. What if employees could get help through natural conversation, with Digital AI (multi-modal: voice, vision, chat) handling routing and resolution automatically?\n\nThat's what we've built - operating in the flow of work with full context understanding, not just another portal to visit.\n\nInterested in a technical discussion about AI-native service architectures?\n\nBest,\nKiran"
+      },
+      {
+        "sender": "Lenin G",
+        "focus": "VP Engineering - Operational Excellence",
+        "subject": "Reducing IT Operational Overhead",
+        "message": "Hi Joseph Rabbia,\n\nYour experience in Head of Information Technology for Investment Banking at Jefferies really resonates. Many IT leaders tell us they're tired of complex ticketing systems that add overhead instead of value.\n\nWe built Atomicwork specifically for this - one unified platform where AI handles the toiling work, letting your team focus on strategic initiatives instead of L1 tickets.\n\nBuilt-in knowledge using your existing Okta/AD context eliminates traditional knowledge management overhead.\n\nWould you be open to a brief conversation about operational efficiency?\n\nBest,\nLenin"
+      },
+      {
+        "sender": "Parsu M",
+        "focus": "VP Product - End-User Experience",
+        "subject": "Service Workforce vs Service Workflows",
+        "message": "Hi Joseph Rabbia,\n\nYour background leading technology initiatives at Jefferies caught my attention. Balancing operational efficiency with service quality at enterprise scale requires the right approach.\n\nMost platforms give you software where you do all the work. Atomicwork delivers a service workforce - focused on faster self-service first, not forcing everything to become a ticket.\n\nOur clients typically see immediate improvements in both team productivity and employee satisfaction.\n\nCould we schedule a brief call to discuss your service delivery strategy?\n\nThanks,\nParsu"
+      },
+      {
+        "sender": "Vijay R",
+        "focus": "CEO - ROI & Business Impact",
+        "subject": "Measurable Impact for Modern Enterprises",
+        "message": "Hi Joseph Rabbia,\n\nYour track record driving operational improvements at Jefferies is exactly the perspective we value.\n\nTraditional ITSM tools were built for Fortune 500 complexity management. Modern enterprises like yours need to move fast with lean teams.\n\nAtomicwork delivers measurable results: 40% reduction in L1 tickets, improved SLA compliance, faster deployment than legacy alternatives.\n\nWhat KPIs matter most for your IT operations, and how do you currently measure service delivery effectiveness?\n\nLooking forward to your insights,\nVijay"
+      },
+      {
+        "sender": "Kiran D",
+        "focus": "CTO - Integration Strategy",
+        "subject": "Modern Service Management Architecture",
+        "message": "Hi Joseph Rabbia,\n\nYour technical leadership across multiple enterprise environments shows deep understanding of integration challenges.\n\nAPI-first, AI-native platforms offer a fundamentally different approach than traditional ITSM. Our context management data lake goes beyond traditional CMDB limitations.\n\nSeamless integration with existing cloud infrastructure while providing the conversational interface employees expect - all with enterprise security and compliance built-in.\n\nWould you be interested in a technical deep-dive on modern service architectures?\n\nBest regards,\nKiran"
+      }
+    ],
+    "redditIntent": {
+      "jobTitle": "Head of Information Technology for Investment Banking at Jefferies",
+      "signals": 6,
+      "sentiment": "seeking_solutions",
+      "keywords": [
+        "automation",
+        "efficiency",
+        "modernization",
+        "digital transformation"
+      ],
+      "analysisDate": "2025-06-04T05:56:38.204Z"
+    },
+    "metrics": {
+      "decisionAuthority": 85,
+      "budgetInfluence": 85,
+      "buyingIntent": 75,
+      "engagementScore": 85,
+      "overallScore": 83
+    },
+    "metadata": {
+      "analysisId": "analysis_1749016595944_a3od7qh9c",
+      "analyzedUrl": "https://www.linkedin.com/in/joseph-rabbia/",
+      "analysisDate": "2025-06-04T05:56:38.229Z",
+      "processingTime": 2285
+    }
+  },
+  "completedAt": "2025-06-04T05:56:38.229Z"
+}

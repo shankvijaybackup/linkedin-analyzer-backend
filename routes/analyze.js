@@ -98,6 +98,9 @@ async function performAnalysis(linkedinUrl, analysisId) {
     updateAnalysisStatus(analysisId, { status: 'processing', progress: 80, stage: 'Creating Personalized Outreach' });
     const tonePersona = aiService.inferDISC(profile);
     const outreachMessages = await aiService.generateOutreach(profile, strategicSummary, company, redditIntent, tonePersona);
+    
+    // Ensure outreach messages is an array
+    const validOutreach = Array.isArray(outreachMessages) ? outreachMessages : [];
 
     updateAnalysisStatus(analysisId, { status: 'processing', progress: 95, stage: 'Finalizing Analysis' });
     const metrics = calculateMetrics(profile, company, redditIntent);
@@ -110,7 +113,7 @@ async function performAnalysis(linkedinUrl, analysisId) {
         profile,
         company,
         strategicSummary,
-        outreachMessages,
+        outreachMessages: validOutreach,
         redditIntent,
         metrics,
         metadata: {

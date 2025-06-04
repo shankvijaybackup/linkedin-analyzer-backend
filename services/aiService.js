@@ -72,7 +72,7 @@ Output only the 8 messages as an array.`;
           content: prompt
         }
       ],
-      model: "gpt-4",
+      model: "gpt-3.5-turbo",
       temperature: 0.7
     });
 

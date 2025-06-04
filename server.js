@@ -1,4 +1,3 @@
-// backend/server.js
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
@@ -26,14 +25,26 @@ const ensureDirectories = () => {
 
 ensureDirectories();
 
-// Middleware
+// CORS Configuration
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://analyzer-nlvblffui-linkedin-buddy.vercel.app', 'https://your-custom-domain.com'] // Replace with your Vercel URL
-    : ['http://localhost:3000', 'http://localhost:3001'],
+  origin: function (origin, callback) {
+    const allowedOrigins = [
+      'http://localhost:3000',
+      'http://localhost:3001',
+      'https://your-custom-domain.com' // Optional: replace with real domain
+    ];
+    const vercelPattern = /^https:\/\/analyzer-[\w-]+-linkedin-buddy\.vercel\.app$/;
+
+    if (!origin || allowedOrigins.includes(origin) || vercelPattern.test(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS: ' + origin));
+    }
+  },
   credentials: true
 }));
 
+// Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

@@ -6,12 +6,14 @@ const fs = require('fs');
 const path = require('path');
 const LinkedInService = require('../services/linkedinService');
 const AIService = require('../services/aiService');
+const RedditIntentScraper = require('../services/redditIntentScraper'); // new
 
 const router = express.Router();
 const upload = multer({ dest: 'uploads/', limits: { fileSize: 5 * 1024 * 1024 } });
 
 const linkedinService = new LinkedInService();
 const aiService = new AIService();
+const redditIntentScraper = new RedditIntentScraper(); // new
 const analysisResults = new Map();
 const analysisTimeouts = new Map();
 
@@ -50,38 +52,23 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Check status or resume from disk - FIXED ROUTE
+// Check status
 router.get('/:id', (req, res) => {
   const { id } = req.params;
-
-  // Check in-memory first
   const memory = analysisResults.get(id);
   if (memory) return res.json(memory);
-
-  // Fallback to file
   const filePath = path.resolve('data', `${id}.json`);
-  if (fs.existsSync(filePath)) {
-    const content = fs.readFileSync(filePath, 'utf-8');
-    return res.json(JSON.parse(content));
-  }
-
-  return res.status(404).json({ error: 'Analysis not found or expired', code: 'NOT_FOUND' });
+  if (fs.existsSync(filePath)) return res.json(JSON.parse(fs.readFileSync(filePath, 'utf-8')));
+  return res.status(404).json({ error: 'Analysis not found or expired' });
 });
 
-// Optional: Direct file access (non-conflicting route)
 router.get('/json/:id', async (req, res) => {
   const { id } = req.params;
   const filePath = path.resolve('data', `${id}.json`);
-
-  if (fs.existsSync(filePath)) {
-    const content = fs.readFileSync(filePath, 'utf-8');
-    return res.json(JSON.parse(content));
-  }
-
+  if (fs.existsSync(filePath)) return res.json(JSON.parse(fs.readFileSync(filePath, 'utf-8')));
   return res.status(404).json({ error: 'Not found', message: `Analysis ${id} not found` });
 });
 
-// Ensure data directory exists
 async function ensureDataDirectory() {
   const dataDir = path.resolve('data');
   if (!fs.existsSync(dataDir)) {
@@ -90,7 +77,6 @@ async function ensureDataDirectory() {
   }
 }
 
-// Call this when the module loads
 ensureDataDirectory();
 
 async function performAnalysis(linkedinUrl, analysisId) {
@@ -104,19 +90,14 @@ async function performAnalysis(linkedinUrl, analysisId) {
     const company = companyUrl ? await linkedinService.getCompanyDetails(companyUrl) : linkedinService.getMockCompanyData();
 
     updateAnalysisStatus(analysisId, { status: 'processing', progress: 40, stage: 'Analyzing Strategic Context' });
-    const redditIntent = {
-      jobTitle: profile.title,
-      signals: 6,
-      sentiment: 'seeking_solutions',
-      keywords: ['automation', 'efficiency', 'modernization', 'digital transformation'],
-      analysisDate: new Date().toISOString()
-    };
+    const redditIntent = await redditIntentScraper.scrape(profile.title);
 
     updateAnalysisStatus(analysisId, { status: 'processing', progress: 60, stage: 'Generating Strategic Summary' });
     const strategicSummary = await aiService.summarizeIntent(profile, company, redditIntent);
 
     updateAnalysisStatus(analysisId, { status: 'processing', progress: 80, stage: 'Creating Personalized Outreach' });
-    const outreachMessages = await aiService.generateOutreach(profile, strategicSummary);
+    const tonePersona = aiService.inferDISC(profile);
+    const outreachMessages = await aiService.generateOutreach(profile, strategicSummary, company, redditIntent, tonePersona);
 
     updateAnalysisStatus(analysisId, { status: 'processing', progress: 95, stage: 'Finalizing Analysis' });
     const metrics = calculateMetrics(profile, company, redditIntent);
@@ -143,13 +124,8 @@ async function performAnalysis(linkedinUrl, analysisId) {
     };
 
     analysisResults.set(analysisId, finalResult);
-
-    // Ensure data directory exists before writing
     await ensureDataDirectory();
-    
-    const filePath = path.resolve('data', `${analysisId}.json`);
-    fs.writeFileSync(filePath, JSON.stringify(finalResult, null, 2));
-
+    fs.writeFileSync(path.resolve('data', `${analysisId}.json`), JSON.stringify(finalResult, null, 2));
     console.log(`✅ Analysis ${analysisId} completed successfully`);
   } catch (error) {
     updateAnalysisStatus(analysisId, {

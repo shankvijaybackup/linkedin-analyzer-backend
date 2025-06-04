@@ -4,6 +4,7 @@ const path = require('path');
 const pdfParse = require('pdf-parse');
 const mammoth = require('mammoth');
 const removeMd = require('remove-markdown');
+const multer = require('multer');
 
 class KnowledgeService {
   constructor() {
@@ -12,6 +13,7 @@ class KnowledgeService {
     this.knowledge = [];
 
     this.ensureDirectory(this.uploadDir);
+    this.ensureDirectory(path.dirname(this.dataFile));
 
     if (fs.existsSync(this.dataFile)) {
       const raw = fs.readFileSync(this.dataFile, 'utf-8');
@@ -20,6 +22,41 @@ class KnowledgeService {
     } else {
       console.warn('⚠️ No knowledge base found at', this.dataFile);
     }
+  }
+
+  // Add the missing getUploadMiddleware method
+  getUploadMiddleware() {
+    const storage = multer.diskStorage({
+      destination: (req, file, cb) => {
+        cb(null, this.uploadDir);
+      },
+      filename: (req, file, cb) => {
+        const timestamp = Date.now();
+        const ext = path.extname(file.originalname);
+        const name = path.basename(file.originalname, ext);
+        cb(null, `${timestamp}-${name}${ext}`);
+      }
+    });
+
+    const fileFilter = (req, file, cb) => {
+      const allowedTypes = ['.pdf', '.docx', '.txt', '.md', '.json'];
+      const ext = path.extname(file.originalname).toLowerCase();
+      
+      if (allowedTypes.includes(ext)) {
+        cb(null, true);
+      } else {
+        cb(new Error(`Unsupported file type: ${ext}. Allowed types: ${allowedTypes.join(', ')}`), false);
+      }
+    };
+
+    return multer({
+      storage,
+      fileFilter,
+      limits: {
+        fileSize: 10 * 1024 * 1024, // 10MB limit
+        files: 10
+      }
+    });
   }
 
   ensureDirectory(dir) {
@@ -68,10 +105,18 @@ class KnowledgeService {
 
       this.knowledge.push(record);
       this.save();
+      
+      // Clean up uploaded file after processing
+      fs.unlinkSync(file.path);
+      
       console.log(`✅ Uploaded and processed: ${file.originalname}`);
       return record;
 
     } catch (error) {
+      // Clean up file on error
+      if (fs.existsSync(file.path)) {
+        fs.unlinkSync(file.path);
+      }
       console.error('❌ Error processing knowledge file:', error.message);
       throw error;
     }
@@ -96,6 +141,7 @@ class KnowledgeService {
   }
 
   save() {
+    this.ensureDirectory(path.dirname(this.dataFile));
     fs.writeFileSync(this.dataFile, JSON.stringify(this.knowledge, null, 2));
   }
 
@@ -126,4 +172,5 @@ class KnowledgeService {
   }
 }
 
-module.exports = KnowledgeService;
+// Export an instance, not the class
+module.exports = new KnowledgeService();

@@ -29,7 +29,7 @@ ensureDirectories();
 // Middleware
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? ['https://your-app-name.vercel.app', 'https://your-custom-domain.com'] // Replace with your Vercel URL
+    ? ['https://analyzer-nlvblffui-linkedin-buddy.vercel.app', 'https://your-custom-domain.com'] // Replace with your Vercel URL
     : ['http://localhost:3000', 'http://localhost:3001'],
   credentials: true
 }));

@@ -25,28 +25,44 @@ const ensureDirectories = () => {
 
 ensureDirectories();
 
-// CORS Configuration
+// CORS Configuration - Fixed to properly handle your Vercel domain
 app.use(cors({
   origin: function (origin, callback) {
     const allowedOrigins = [
       'http://localhost:3000',
       'http://localhost:3001',
+      'https://analyzer-nlvblffui-linkedin-buddy.vercel.app', // Your specific Vercel domain
       'https://your-custom-domain.com' // Optional: replace with real domain
     ];
-    const vercelPattern = /^https:\/\/analyzer-[\w-]+-linkedin-buddy\.vercel\.app$/;
+    
+    // More flexible Vercel pattern that handles all variations
+    const vercelPatterns = [
+      /^https:\/\/analyzer-.*\.vercel\.app$/,
+      /^https:\/\/.*-linkedin-buddy\.vercel\.app$/,
+      /^https:\/\/.*\.vercel\.app$/
+    ];
 
-    if (!origin || allowedOrigins.includes(origin) || vercelPattern.test(origin)) {
+    // Check if origin is allowed
+    const isAllowed = !origin || // Allow requests with no origin (like mobile apps)
+      allowedOrigins.includes(origin) ||
+      vercelPatterns.some(pattern => pattern.test(origin));
+
+    if (isAllowed) {
+      console.log(`✅ CORS: Allowing origin: ${origin || 'no-origin'}`);
       callback(null, true);
     } else {
+      console.log(`❌ CORS: Blocking origin: ${origin}`);
       callback(new Error('Not allowed by CORS: ' + origin));
     }
   },
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
 // Middleware
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // API Routes
 app.use('/api/analyze', analyzeRoutes);
@@ -99,3 +115,5 @@ app.listen(PORT, () => {
   console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
   console.log(`🔗 Health check: http://localhost:${PORT}/api/health`);
 });
+
+module.exports = app;

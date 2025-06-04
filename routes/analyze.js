@@ -6,14 +6,14 @@ const fs = require('fs');
 const path = require('path');
 const LinkedInService = require('../services/linkedinService');
 const AIService = require('../services/aiService');
-const RedditIntentScraper = require('../services/redditIntentScraper'); // new
+const RedditService = require('../services/redditService'); // Fixed import
 
 const router = express.Router();
 const upload = multer({ dest: 'uploads/', limits: { fileSize: 5 * 1024 * 1024 } });
 
 const linkedinService = new LinkedInService();
 const aiService = new AIService();
-const redditIntentScraper = new RedditIntentScraper(); // new
+const redditService = new RedditService(); // Fixed instantiation
 const analysisResults = new Map();
 const analysisTimeouts = new Map();
 
@@ -90,7 +90,7 @@ async function performAnalysis(linkedinUrl, analysisId) {
     const company = companyUrl ? await linkedinService.getCompanyDetails(companyUrl) : linkedinService.getMockCompanyData();
 
     updateAnalysisStatus(analysisId, { status: 'processing', progress: 40, stage: 'Analyzing Strategic Context' });
-    const redditIntent = await redditIntentScraper.scrape(profile.title);
+    const redditIntent = await redditService.getRedditIntent(profile.title); // Fixed method call
 
     updateAnalysisStatus(analysisId, { status: 'processing', progress: 60, stage: 'Generating Strategic Summary' });
     const strategicSummary = await aiService.summarizeIntent(profile, company, redditIntent);

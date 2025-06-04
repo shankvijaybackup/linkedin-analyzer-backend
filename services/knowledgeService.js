@@ -10,17 +10,24 @@ class KnowledgeService {
   constructor() {
     this.uploadDir = path.resolve('uploads', 'knowledge');
     this.dataFile = path.resolve('data', 'knowledge-base.json');
-    this.knowledge = [];
+    this.knowledge = []; // Initialize as empty array
 
     this.ensureDirectory(this.uploadDir);
     this.ensureDirectory(path.dirname(this.dataFile));
 
     if (fs.existsSync(this.dataFile)) {
-      const raw = fs.readFileSync(this.dataFile, 'utf-8');
-      this.knowledge = JSON.parse(raw);
-      console.log(`📚 Loaded ${this.knowledge.length} knowledge entries`);
+      try {
+        const raw = fs.readFileSync(this.dataFile, 'utf-8');
+        const parsed = JSON.parse(raw);
+        this.knowledge = Array.isArray(parsed) ? parsed : []; // Ensure it's an array
+        console.log(`📚 Loaded ${this.knowledge.length} knowledge entries`);
+      } catch (error) {
+        console.warn('⚠️ Error reading knowledge base, starting fresh:', error.message);
+        this.knowledge = [];
+      }
     } else {
-      console.warn('⚠️ No knowledge base found at', this.dataFile);
+      console.warn('⚠️ No knowledge base found, starting fresh');
+      this.knowledge = [];
     }
   }
 
@@ -53,7 +60,7 @@ class KnowledgeService {
       storage,
       fileFilter,
       limits: {
-        fileSize: 10 * 1024 * 1024, // 10MB limit
+        fileSize: 50 * 1024 * 1024, // Increased to 50MB limit
         files: 10
       }
     });
@@ -103,11 +110,18 @@ class KnowledgeService {
         timestamp: new Date().toISOString()
       };
 
+      // Ensure knowledge is an array before pushing
+      if (!Array.isArray(this.knowledge)) {
+        this.knowledge = [];
+      }
+      
       this.knowledge.push(record);
       this.save();
       
       // Clean up uploaded file after processing
-      fs.unlinkSync(file.path);
+      if (fs.existsSync(file.path)) {
+        fs.unlinkSync(file.path);
+      }
       
       console.log(`✅ Uploaded and processed: ${file.originalname}`);
       return record;
@@ -141,34 +155,83 @@ class KnowledgeService {
   }
 
   save() {
-    this.ensureDirectory(path.dirname(this.dataFile));
-    fs.writeFileSync(this.dataFile, JSON.stringify(this.knowledge, null, 2));
+    try {
+      this.ensureDirectory(path.dirname(this.dataFile));
+      fs.writeFileSync(this.dataFile, JSON.stringify(this.knowledge, null, 2));
+    } catch (error) {
+      console.error('❌ Error saving knowledge base:', error.message);
+    }
   }
 
   listAll() {
+    if (!Array.isArray(this.knowledge)) {
+      return [];
+    }
     return this.knowledge.map(k => ({
       id: k.id,
       title: k.title,
       tags: k.tags,
       category: k.category,
-      priority: k.priority
+      priority: k.priority,
+      timestamp: k.timestamp
     }));
   }
 
   findByTag(tag) {
-    return this.knowledge.filter(k => k.tags.includes(tag));
+    if (!Array.isArray(this.knowledge)) {
+      return [];
+    }
+    return this.knowledge.filter(k => k.tags && k.tags.includes(tag));
   }
 
   search(query) {
+    if (!Array.isArray(this.knowledge)) {
+      return [];
+    }
     const lower = query.toLowerCase();
     return this.knowledge.filter(k =>
-      k.title.toLowerCase().includes(lower) ||
-      k.body.toLowerCase().includes(lower)
+      (k.title && k.title.toLowerCase().includes(lower)) ||
+      (k.body && k.body.toLowerCase().includes(lower))
     );
   }
 
   getRaw() {
-    return this.knowledge;
+    return Array.isArray(this.knowledge) ? this.knowledge : [];
+  }
+
+  // Add stats method
+  getStats() {
+    const knowledge = Array.isArray(this.knowledge) ? this.knowledge : [];
+    const categories = {};
+    const tags = {};
+    
+    knowledge.forEach(item => {
+      // Count categories
+      const category = item.category || 'uncategorized';
+      categories[category] = (categories[category] || 0) + 1;
+      
+      // Count tags
+      if (item.tags && Array.isArray(item.tags)) {
+        item.tags.forEach(tag => {
+          tags[tag] = (tags[tag] || 0) + 1;
+        });
+      }
+    });
+
+    return {
+      total: knowledge.length,
+      categories,
+      tags,
+      recentUploads: knowledge
+        .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+        .slice(0, 5)
+        .map(k => ({
+          id: k.id,
+          title: k.title,
+          category: k.category,
+          timestamp: k.timestamp
+        }))
+    };
   }
 }
 

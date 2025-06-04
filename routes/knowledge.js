@@ -69,7 +69,19 @@ router.get('/', async (req, res) => {
     const list = knowledgeService.listAll();
     res.json({ items: list, total: list.length });
   } catch (error) {
+    console.error('❌ Error fetching knowledge items:', error);
     res.status(500).json({ error: 'Failed to fetch knowledge items', code: 'FETCH_ERROR' });
+  }
+});
+
+// Get knowledge stats - ADD THIS MISSING ENDPOINT
+router.get('/stats', async (req, res) => {
+  try {
+    const stats = knowledgeService.getStats();
+    res.json(stats);
+  } catch (error) {
+    console.error('❌ Error fetching knowledge stats:', error);
+    res.status(500).json({ error: 'Failed to fetch knowledge stats', code: 'STATS_ERROR' });
   }
 });
 
@@ -82,6 +94,7 @@ router.post('/search', async (req, res) => {
     const results = knowledgeService.search(query);
     res.json({ query, results, total: results.length });
   } catch (error) {
+    console.error('❌ Search error:', error);
     res.status(500).json({ error: 'Search failed', details: error.message, code: 'SEARCH_ERROR' });
   }
 });
@@ -92,6 +105,7 @@ router.get('/raw', async (req, res) => {
     const data = knowledgeService.getRaw();
     res.json({ items: data });
   } catch (error) {
+    console.error('❌ Error fetching raw knowledge:', error);
     res.status(500).json({ error: 'Failed to fetch raw knowledge', code: 'FETCH_ERROR' });
   }
 });

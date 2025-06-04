@@ -16,7 +16,6 @@ class LinkedInService {
       console.log(`🔍 Fetching profile: ${linkedinUrl}`);
       
       if (!this.proxycurlKey) {
-        // Return mock data for testing
         return this.getMockProfileData(linkedinUrl);
       }
       
@@ -34,7 +33,6 @@ class LinkedInService {
 
     } catch (error) {
       console.error('❌ LinkedIn profile fetch failed:', error.message);
-      
       if (error.response) {
         throw new Error(`LinkedIn API Error: ${error.response.status} - ${error.response.data?.message || 'Unknown error'}`);
       } else if (error.request) {
@@ -60,9 +58,7 @@ class LinkedInService {
       
       const response = await axios.get(`${this.baseURL}/linkedin/company`, {
         params: { url: companyLinkedinUrl },
-        headers: {
-          'Authorization': `Bearer ${this.proxycurlKey}`
-        },
+        headers: { 'Authorization': `Bearer ${this.proxycurlKey}` },
         timeout: 30000
       });
 
@@ -110,7 +106,7 @@ class LinkedInService {
   extractSkills(profile) {
     try {
       const skills = profile.skills || [];
-      return skills.slice(0, 8).map(skill => 
+      return skills.slice(0, 8).map(skill =>
         typeof skill === 'string' ? skill : skill.name || skill
       ).filter(Boolean);
     } catch (error) {
@@ -121,7 +117,7 @@ class LinkedInService {
   extractCertifications(profile) {
     try {
       const certifications = profile.certifications || [];
-      return certifications.slice(0, 6).map(cert => 
+      return certifications.slice(0, 6).map(cert =>
         typeof cert === 'string' ? cert : cert.name || cert.title || cert
       ).filter(Boolean);
     } catch (error) {
@@ -166,13 +162,12 @@ class LinkedInService {
     }
   }
 
-  // Mock data for testing without API key
   getMockProfileData(linkedinUrl) {
     return {
       full_name: "Sarah Chen",
       headline: "VP of IT Operations at TechCorp Solutions",
       occupation: "VP of IT Operations",
-      summary: "Technology leader with 12+ years driving digital transformation initiatives across enterprise environments. Passionate about leveraging modern tools to improve operational efficiency and employee experience.",
+      summary: "Technology leader with 12+ years driving digital transformation initiatives across enterprise environments.",
       city: "San Francisco",
       country: "United States",
       connections: 850,
@@ -184,28 +179,17 @@ class LinkedInService {
           starts_at: { year: 2021 },
           ends_at: null,
           description: "Leading IT operations for 5,000+ employee organization"
-        },
-        {
-          title: "Senior IT Manager",
-          company: "Innovation Labs",
-          starts_at: { year: 2018 },
-          ends_at: { year: 2021 },
-          description: "Managed cross-functional IT teams and infrastructure modernization"
         }
       ],
       skills: [
         { name: "Digital Transformation" },
         { name: "Cloud Migration" },
         { name: "ITSM" },
-        { name: "Team Leadership" },
-        { name: "Process Optimization" },
-        { name: "Vendor Management" }
+        { name: "Team Leadership" }
       ],
       certifications: [
         { name: "AWS Solutions Architect" },
-        { name: "ITIL v4" },
-        { name: "PMP" },
-        { name: "Certified ScrumMaster" }
+        { name: "ITIL v4" }
       ]
     };
   }

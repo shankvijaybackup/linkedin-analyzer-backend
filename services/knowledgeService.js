@@ -1,335 +1,128 @@
 // backend/services/knowledgeService.js
-const multer = require('multer');
+const fs = require('fs');
 const path = require('path');
-const fs = require('fs').promises;
+const pdfParse = require('pdf-parse');
 const mammoth = require('mammoth');
-const pdf = require('pdf-parse');
+const removeMd = require('remove-markdown');
 
 class KnowledgeService {
   constructor() {
-    this.knowledgeBase = new Map();
-    this.loadExistingKnowledge();
+    this.uploadDir = path.resolve('uploads', 'knowledge');
+    this.dataFile = path.resolve('data', 'knowledge-base.json');
+    this.knowledge = [];
+
+    this.ensureDirectory(this.uploadDir);
+
+    if (fs.existsSync(this.dataFile)) {
+      const raw = fs.readFileSync(this.dataFile, 'utf-8');
+      this.knowledge = JSON.parse(raw);
+      console.log(`📚 Loaded ${this.knowledge.length} knowledge entries`);
+    } else {
+      console.warn('⚠️ No knowledge base found at', this.dataFile);
+    }
   }
 
-  // Configure multer for file uploads
-  getUploadMiddleware() {
-    const storage = multer.diskStorage({
-      destination: (req, file, cb) => {
-        cb(null, 'uploads/knowledge/');
-      },
-      filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-      }
-    });
-
-    return multer({
-      storage,
-      limits: {
-        fileSize: 50 * 1024 * 1024, // 50MB limit
-      },
-      fileFilter: (req, file, cb) => {
-        const allowedTypes = [
-          'application/pdf',
-          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-          'application/msword',
-          'text/plain',
-          'text/markdown',
-          'application/json'
-        ];
-        
-        if (allowedTypes.includes(file.mimetype)) {
-          cb(null, true);
-        } else {
-          cb(new Error('Invalid file type. Supported: PDF, DOCX, DOC, TXT, MD, JSON'));
-        }
-      }
-    });
+  ensureDirectory(dir) {
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+      console.log(`📁 Created directory: ${dir}`);
+    }
   }
 
-  // Process uploaded documents
-  async processDocument(file, metadata = {}) {
+  async processFile(file, meta) {
+    const ext = path.extname(file.originalname).toLowerCase();
+    const rawBuffer = fs.readFileSync(file.path);
+    let text = '';
+
     try {
-      console.log(`📄 Processing document: ${file.originalname}`);
-      
-      let content = '';
-      const fileExtension = path.extname(file.originalname).toLowerCase();
-      
-      switch (fileExtension) {
-        case '.pdf':
-          content = await this.extractPdfContent(file.path);
-          break;
-        case '.docx':
-          content = await this.extractDocxContent(file.path);
-          break;
-        case '.doc':
-          content = await this.extractDocContent(file.path);
-          break;
-        case '.txt':
-        case '.md':
-          content = await this.extractTextContent(file.path);
-          break;
-        case '.json':
-          content = await this.extractJsonContent(file.path);
-          break;
-        default:
-          throw new Error(`Unsupported file type: ${fileExtension}`);
+      if (ext === '.pdf') {
+        const parsed = await pdfParse(rawBuffer);
+        text = parsed.text;
+      } else if (ext === '.docx') {
+        const parsed = await mammoth.extractRawText({ buffer: rawBuffer });
+        text = parsed.value;
+      } else if (ext === '.txt') {
+        text = rawBuffer.toString('utf-8');
+      } else if (ext === '.md') {
+        text = removeMd(rawBuffer.toString('utf-8'));
+      } else if (ext === '.json') {
+        const json = JSON.parse(rawBuffer.toString('utf-8'));
+        text = JSON.stringify(json, null, 2);
+      } else {
+        throw new Error('Unsupported file type');
       }
 
-      // Clean and structure the content
-      const processedContent = this.cleanContent(content);
-      
-      // Create knowledge entry
-      const knowledgeEntry = {
-        id: this.generateId(),
+      const chunks = this.chunkText(text);
+      const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      const record = {
+        id,
+        title: meta.title || file.originalname,
         filename: file.originalname,
-        content: processedContent,
-        metadata: {
-          uploadDate: new Date().toISOString(),
-          fileSize: file.size,
-          fileType: fileExtension,
-          category: metadata.category || 'general',
-          tags: metadata.tags || [],
-          priority: metadata.priority || 'medium',
-          ...metadata
-        },
-        chunks: this.chunkContent(processedContent)
+        tags: meta.tags || [],
+        category: meta.category || 'general',
+        priority: meta.priority || 'medium',
+        body: text,
+        chunks,
+        timestamp: new Date().toISOString()
       };
 
-      // Store in knowledge base
-      this.knowledgeBase.set(knowledgeEntry.id, knowledgeEntry);
-      
-      // Save to persistent storage
-      await this.saveKnowledgeBase();
-      
-      // Clean up uploaded file
-      await fs.unlink(file.path);
-      
-      console.log(`✅ Document processed successfully: ${file.originalname}`);
-      return knowledgeEntry;
-      
+      this.knowledge.push(record);
+      this.save();
+      console.log(`✅ Uploaded and processed: ${file.originalname}`);
+      return record;
+
     } catch (error) {
-      console.error(`❌ Error processing document ${file.originalname}:`, error);
-      
-      // Clean up file on error
-      try {
-        await fs.unlink(file.path);
-      } catch (unlinkError) {
-        console.error('Error cleaning up file:', unlinkError);
-      }
-      
+      console.error('❌ Error processing knowledge file:', error.message);
       throw error;
     }
   }
 
-  // Extract content from different file types
-  async extractPdfContent(filePath) {
-    try {
-      const dataBuffer = await fs.readFile(filePath);
-      const data = await pdf(dataBuffer);
-      return data.text;
-    } catch (error) {
-      console.error('PDF extraction error:', error);
-      return 'Error extracting PDF content';
-    }
-  }
-
-  async extractDocxContent(filePath) {
-    try {
-      const result = await mammoth.extractRawText({ path: filePath });
-      return result.value;
-    } catch (error) {
-      console.error('DOCX extraction error:', error);
-      return 'Error extracting DOCX content';
-    }
-  }
-
-  async extractDocContent(filePath) {
-    try {
-      // Basic implementation for .doc files
-      const dataBuffer = await fs.readFile(filePath);
-      return dataBuffer.toString('utf8');
-    } catch (error) {
-      console.error('DOC extraction error:', error);
-      return 'Error extracting DOC content';
-    }
-  }
-
-  async extractTextContent(filePath) {
-    try {
-      return await fs.readFile(filePath, 'utf8');
-    } catch (error) {
-      console.error('Text extraction error:', error);
-      return 'Error extracting text content';
-    }
-  }
-
-  async extractJsonContent(filePath) {
-    try {
-      const jsonData = await fs.readFile(filePath, 'utf8');
-      const parsed = JSON.parse(jsonData);
-      return JSON.stringify(parsed, null, 2);
-    } catch (error) {
-      console.error('JSON extraction error:', error);
-      return 'Error extracting JSON content';
-    }
-  }
-
-  // Content processing
-  cleanContent(content) {
-    return content
-      .replace(/\r\n/g, '\n')
-      .replace(/\n{3,}/g, '\n\n')
-      .trim();
-  }
-
-  chunkContent(content, chunkSize = 1000) {
+  chunkText(text, chunkSize = 800) {
+    const sentences = text.split(/(?<=[.?!])\s+/);
     const chunks = [];
-    const sentences = content.split(/[.!?]+/);
-    let currentChunk = '';
-    
+    let current = [];
+
     for (const sentence of sentences) {
-      if (currentChunk.length + sentence.length > chunkSize && currentChunk) {
-        chunks.push(currentChunk.trim());
-        currentChunk = sentence;
+      const joined = current.concat(sentence).join(' ');
+      if (joined.length >= chunkSize) {
+        chunks.push(joined);
+        current = [];
       } else {
-        currentChunk += sentence + '.';
+        current.push(sentence);
       }
     }
-    
-    if (currentChunk) {
-      chunks.push(currentChunk.trim());
-    }
-    
+    if (current.length) chunks.push(current.join(' '));
     return chunks;
   }
 
-  // Search and retrieval
-  async searchKnowledge(query, category = null, limit = 10) {
-    const results = [];
-    
-    for (const [id, entry] of this.knowledgeBase) {
-      if (category && entry.metadata.category !== category) continue;
-      
-      const relevanceScore = this.calculateRelevance(query, entry);
-      if (relevanceScore > 0.1) {
-        results.push({
-          id,
-          filename: entry.filename,
-          content: entry.content.substring(0, 500) + '...',
-          metadata: entry.metadata,
-          relevanceScore
-        });
-      }
-    }
-    
-    return results
-      .sort((a, b) => b.relevanceScore - a.relevanceScore)
-      .slice(0, limit);
+  save() {
+    fs.writeFileSync(this.dataFile, JSON.stringify(this.knowledge, null, 2));
   }
 
-  calculateRelevance(query, entry) {
-    const queryLower = query.toLowerCase();
-    const contentLower = entry.content.toLowerCase();
-    
-    // Simple relevance scoring
-    let score = 0;
-    const queryWords = queryLower.split(/\s+/);
-    
-    for (const word of queryWords) {
-      const occurrences = (contentLower.match(new RegExp(word, 'g')) || []).length;
-      score += occurrences / entry.content.length * 1000;
-    }
-    
-    // Boost score based on metadata
-    if (entry.metadata.category === 'outreach_templates') score *= 1.5;
-    if (entry.metadata.priority === 'high') score *= 1.3;
-    
-    return Math.min(score, 1); // Normalize to 0-1
+  listAll() {
+    return this.knowledge.map(k => ({
+      id: k.id,
+      title: k.title,
+      tags: k.tags,
+      category: k.category,
+      priority: k.priority
+    }));
   }
 
-  // Knowledge base management
-  async loadExistingKnowledge() {
-    try {
-      const knowledgeData = await fs.readFile('data/knowledge-base.json', 'utf8');
-      const parsed = JSON.parse(knowledgeData);
-      
-      for (const [id, entry] of Object.entries(parsed)) {
-        this.knowledgeBase.set(id, entry);
-      }
-      
-      console.log(`📚 Loaded ${this.knowledgeBase.size} knowledge entries`);
-    } catch (error) {
-      console.log('📚 No existing knowledge base found, starting fresh');
-    }
+  findByTag(tag) {
+    return this.knowledge.filter(k => k.tags.includes(tag));
   }
 
-  async saveKnowledgeBase() {
-    try {
-      await fs.mkdir('data', { recursive: true });
-      const knowledgeObject = Object.fromEntries(this.knowledgeBase);
-      await fs.writeFile(
-        'data/knowledge-base.json', 
-        JSON.stringify(knowledgeObject, null, 2)
-      );
-    } catch (error) {
-      console.error('Error saving knowledge base:', error);
-    }
+  search(query) {
+    const lower = query.toLowerCase();
+    return this.knowledge.filter(k =>
+      k.title.toLowerCase().includes(lower) ||
+      k.body.toLowerCase().includes(lower)
+    );
   }
 
-  // Statistics and management
-  getKnowledgeStats() {
-    const stats = {
-      totalDocuments: this.knowledgeBase.size,
-      categories: {},
-      totalSize: 0,
-      recentUploads: 0
-    };
-    
-    const oneWeekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-    
-    for (const entry of this.knowledgeBase.values()) {
-      // Category breakdown
-      const category = entry.metadata.category;
-      stats.categories[category] = (stats.categories[category] || 0) + 1;
-      
-      // Total size
-      stats.totalSize += entry.metadata.fileSize || 0;
-      
-      // Recent uploads
-      if (new Date(entry.metadata.uploadDate) > oneWeekAgo) {
-        stats.recentUploads++;
-      }
-    }
-    
-    return stats;
-  }
-
-  async deleteKnowledge(id) {
-    if (this.knowledgeBase.has(id)) {
-      this.knowledgeBase.delete(id);
-      await this.saveKnowledgeBase();
-      return true;
-    }
-    return false;
-  }
-
-  generateId() {
-    return 'kb_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-  }
-
-  // Categories for organization
-  getCategories() {
-    return [
-      'outreach_templates',
-      'product_information', 
-      'industry_insights',
-      'competitor_analysis',
-      'case_studies',
-      'sales_playbooks',
-      'technical_documentation',
-      'general'
-    ];
+  getRaw() {
+    return this.knowledge;
   }
 }
 

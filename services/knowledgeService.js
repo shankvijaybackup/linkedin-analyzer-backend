@@ -19,26 +19,20 @@ class KnowledgeService {
       console.log(`📚 Loaded ${this.knowledge.length} knowledge entries`);
     }
   }
-// Add this method inside your KnowledgeService class
+
 getUploadMiddleware() {
   const multer = require('multer');
   return multer({
     dest: 'uploads/',
-    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB max
     fileFilter: (req, file, cb) => {
       const allowedTypes = ['application/pdf', 'text/markdown', 'text/plain'];
       if (allowedTypes.includes(file.mimetype)) cb(null, true);
-      else cb(new Error('Only PDF or Markdown files allowed'));
+      else cb(new Error('Only PDF, Markdown, or Plain text files are allowed'));
     }
   });
 }
 
-  getUploadMiddleware() {
-    return multer({
-      dest: this.uploadDir,
-      limits: { fileSize: 50 * 1024 * 1024 }
-    });
-  }
 
   ensureDirectory(dir) {
     if (!fs.existsSync(dir)) {

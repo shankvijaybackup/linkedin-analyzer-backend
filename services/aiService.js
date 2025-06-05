@@ -20,13 +20,24 @@ class AIService {
   }
 
   loadKnowledge() {
-    if (fs.existsSync(this.knowledgePath)) {
+  if (fs.existsSync(this.knowledgePath)) {
+    try {
       const raw = fs.readFileSync(this.knowledgePath, 'utf-8');
-      const all = JSON.parse(raw);
-      return all.map(item => `${item.title}\n${removeMarkdown(item.body).slice(0, 500)}`);
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        return parsed.map(item => `${item.title}\n${removeMarkdown(item.body).slice(0, 500)}`);
+      } else {
+        console.warn('⚠️ knowledge-base.json is not an array. Ignoring...');
+        return [];
+      }
+    } catch (err) {
+      console.error('❌ Failed to parse knowledge-base.json:', err.message);
+      return [];
     }
-    return [];
   }
+  return [];
+}
+
 
   async summarizeIntent(profile, company, redditIntent) {
     const context = this.cachedKnowledge.slice(0, 5).join('\n\n');

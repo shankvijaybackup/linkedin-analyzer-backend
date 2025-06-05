@@ -14,25 +14,33 @@ class KnowledgeService {
     this.ensureDirectory(this.uploadDir);
 
     if (fs.existsSync(this.dataFile)) {
-      const raw = fs.readFileSync(this.dataFile, 'utf-8');
-      this.knowledge = JSON.parse(raw);
-      console.log(`📚 Loaded ${this.knowledge.length} knowledge entries`);
+      try {
+        const raw = fs.readFileSync(this.dataFile, 'utf-8');
+        const parsed = JSON.parse(raw);
+        this.knowledge = Array.isArray(parsed) ? parsed : [];
+        if (!Array.isArray(parsed)) {
+          console.warn('⚠️ knowledge-base.json is not an array. Resetting to empty.');
+        } else {
+          console.log(`📚 Loaded ${this.knowledge.length} knowledge entries`);
+        }
+      } catch (e) {
+        console.error('❌ Failed to parse knowledge-base.json:', e.message);
+        this.knowledge = [];
+      }
     }
   }
 
-getUploadMiddleware() {
-  const multer = require('multer');
-  return multer({
-    dest: 'uploads/',
-    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB max
-    fileFilter: (req, file, cb) => {
-      const allowedTypes = ['application/pdf', 'text/markdown', 'text/plain'];
-      if (allowedTypes.includes(file.mimetype)) cb(null, true);
-      else cb(new Error('Only PDF, Markdown, or Plain text files are allowed'));
-    }
-  });
-}
-
+  static getUploadMiddleware() {
+    return multer({
+      dest: 'uploads/',
+      limits: { fileSize: 10 * 1024 * 1024 }, // 10MB max
+      fileFilter: (req, file, cb) => {
+        const allowedTypes = ['application/pdf', 'text/markdown', 'text/plain'];
+        if (allowedTypes.includes(file.mimetype)) cb(null, true);
+        else cb(new Error('Only PDF, Markdown, or Plain text files are allowed'));
+      }
+    });
+  }
 
   ensureDirectory(dir) {
     if (!fs.existsSync(dir)) {

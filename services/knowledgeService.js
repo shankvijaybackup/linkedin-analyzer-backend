@@ -1,139 +1,75 @@
 // backend/services/knowledgeService.js
+const multer = require('multer');
 const fs = require('fs');
 const path = require('path');
 const pdfParse = require('pdf-parse');
 const mammoth = require('mammoth');
 const removeMd = require('remove-markdown');
-const multer = require('multer');
 
 class KnowledgeService {
   constructor() {
     this.uploadDir = path.resolve('uploads', 'knowledge');
     this.dataFile = path.resolve('data', 'knowledge-base.json');
-    this.knowledge = []; // Initialize as empty array
-
+    this.knowledge = [];
     this.ensureDirectory(this.uploadDir);
-    this.ensureDirectory(path.dirname(this.dataFile));
 
     if (fs.existsSync(this.dataFile)) {
-      try {
-        const raw = fs.readFileSync(this.dataFile, 'utf-8');
-        const parsed = JSON.parse(raw);
-        this.knowledge = Array.isArray(parsed) ? parsed : []; // Ensure it's an array
-        console.log(`📚 Loaded ${this.knowledge.length} knowledge entries`);
-      } catch (error) {
-        console.warn('⚠️ Error reading knowledge base, starting fresh:', error.message);
-        this.knowledge = [];
-      }
-    } else {
-      console.warn('⚠️ No knowledge base found, starting fresh');
-      this.knowledge = [];
+      const raw = fs.readFileSync(this.dataFile, 'utf-8');
+      this.knowledge = JSON.parse(raw);
+      console.log(`📚 Loaded ${this.knowledge.length} knowledge entries`);
     }
   }
 
-  // Add the missing getUploadMiddleware method
   getUploadMiddleware() {
-    const storage = multer.diskStorage({
-      destination: (req, file, cb) => {
-        cb(null, this.uploadDir);
-      },
-      filename: (req, file, cb) => {
-        const timestamp = Date.now();
-        const ext = path.extname(file.originalname);
-        const name = path.basename(file.originalname, ext);
-        cb(null, `${timestamp}-${name}${ext}`);
-      }
-    });
-
-    const fileFilter = (req, file, cb) => {
-      const allowedTypes = ['.pdf', '.docx', '.txt', '.md', '.json'];
-      const ext = path.extname(file.originalname).toLowerCase();
-      
-      if (allowedTypes.includes(ext)) {
-        cb(null, true);
-      } else {
-        cb(new Error(`Unsupported file type: ${ext}. Allowed types: ${allowedTypes.join(', ')}`), false);
-      }
-    };
-
     return multer({
-      storage,
-      fileFilter,
-      limits: {
-        fileSize: 50 * 1024 * 1024, // Increased to 50MB limit
-        files: 10
-      }
+      dest: this.uploadDir,
+      limits: { fileSize: 50 * 1024 * 1024 }
     });
   }
 
   ensureDirectory(dir) {
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
-      console.log(`📁 Created directory: ${dir}`);
     }
   }
 
-  async processFile(file, meta) {
+  async processDocument(file, metadata) {
     const ext = path.extname(file.originalname).toLowerCase();
-    const rawBuffer = fs.readFileSync(file.path);
+    const raw = fs.readFileSync(file.path);
     let text = '';
 
-    try {
-      if (ext === '.pdf') {
-        const parsed = await pdfParse(rawBuffer);
-        text = parsed.text;
-      } else if (ext === '.docx') {
-        const parsed = await mammoth.extractRawText({ buffer: rawBuffer });
-        text = parsed.value;
-      } else if (ext === '.txt') {
-        text = rawBuffer.toString('utf-8');
-      } else if (ext === '.md') {
-        text = removeMd(rawBuffer.toString('utf-8'));
-      } else if (ext === '.json') {
-        const json = JSON.parse(rawBuffer.toString('utf-8'));
-        text = JSON.stringify(json, null, 2);
-      } else {
-        throw new Error('Unsupported file type');
-      }
-
-      const chunks = this.chunkText(text);
-      const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-      const record = {
-        id,
-        title: meta.title || file.originalname,
-        filename: file.originalname,
-        tags: meta.tags || [],
-        category: meta.category || 'general',
-        priority: meta.priority || 'medium',
-        body: text,
-        chunks,
-        timestamp: new Date().toISOString()
-      };
-
-      // Ensure knowledge is an array before pushing
-      if (!Array.isArray(this.knowledge)) {
-        this.knowledge = [];
-      }
-      
-      this.knowledge.push(record);
-      this.save();
-      
-      // Clean up uploaded file after processing
-      if (fs.existsSync(file.path)) {
-        fs.unlinkSync(file.path);
-      }
-      
-      console.log(`✅ Uploaded and processed: ${file.originalname}`);
-      return record;
-
-    } catch (error) {
-      // Clean up file on error
-      if (fs.existsSync(file.path)) {
-        fs.unlinkSync(file.path);
-      }
-      console.error('❌ Error processing knowledge file:', error.message);
-      throw error;
+    if (ext === '.pdf') {
+      text = (await pdfParse(raw)).text;
+    } else if (ext === '.docx') {
+      text = (await mammoth.extractRawText({ buffer: raw })).value;
+    } else if (ext === '.txt') {
+      text = raw.toString('utf-8');
+    } else if (ext === '.md') {
+      text = removeMd(raw.toString('utf-8'));
+    } else if (ext === '.json') {
+      text = JSON.stringify(JSON.parse(raw.toString('utf-8')), null, 2);
+    } else {
+      throw new Error('Unsupported file type');
     }
+
+    const chunks = this.chunkText(text);
+    const id = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    const record = {
+      id,
+      filename: file.originalname,
+      content: text,
+      chunks,
+      metadata: {
+        ...metadata,
+        uploadDate: new Date().toISOString(),
+        fileSize: file.size,
+        fileType: ext.replace('.', '')
+      }
+    };
+
+    this.knowledge.push(record);
+    this.save();
+    return record;
   }
 
   chunkText(text, chunkSize = 800) {
@@ -150,90 +86,33 @@ class KnowledgeService {
         current.push(sentence);
       }
     }
+
     if (current.length) chunks.push(current.join(' '));
     return chunks;
   }
 
   save() {
-    try {
-      this.ensureDirectory(path.dirname(this.dataFile));
-      fs.writeFileSync(this.dataFile, JSON.stringify(this.knowledge, null, 2));
-    } catch (error) {
-      console.error('❌ Error saving knowledge base:', error.message);
-    }
+    fs.writeFileSync(this.dataFile, JSON.stringify(this.knowledge, null, 2));
   }
 
-  listAll() {
-    if (!Array.isArray(this.knowledge)) {
-      return [];
-    }
-    return this.knowledge.map(k => ({
-      id: k.id,
-      title: k.title,
-      tags: k.tags,
-      category: k.category,
-      priority: k.priority,
-      timestamp: k.timestamp
-    }));
-  }
-
-  findByTag(tag) {
-    if (!Array.isArray(this.knowledge)) {
-      return [];
-    }
-    return this.knowledge.filter(k => k.tags && k.tags.includes(tag));
-  }
-
-  search(query) {
-    if (!Array.isArray(this.knowledge)) {
-      return [];
-    }
-    const lower = query.toLowerCase();
-    return this.knowledge.filter(k =>
-      (k.title && k.title.toLowerCase().includes(lower)) ||
-      (k.body && k.body.toLowerCase().includes(lower))
-    );
-  }
-
-  getRaw() {
-    return Array.isArray(this.knowledge) ? this.knowledge : [];
-  }
-
-  // Add stats method
-  getStats() {
-    const knowledge = Array.isArray(this.knowledge) ? this.knowledge : [];
+  getKnowledgeStats() {
     const categories = {};
-    const tags = {};
-    
-    knowledge.forEach(item => {
-      // Count categories
-      const category = item.category || 'uncategorized';
-      categories[category] = (categories[category] || 0) + 1;
-      
-      // Count tags
-      if (item.tags && Array.isArray(item.tags)) {
-        item.tags.forEach(tag => {
-          tags[tag] = (tags[tag] || 0) + 1;
-        });
-      }
+    this.knowledge.forEach(item => {
+      const cat = item.metadata?.category || 'general';
+      categories[cat] = (categories[cat] || 0) + 1;
     });
 
+    const totalSize = this.knowledge.reduce((sum, item) => sum + (item.metadata.fileSize || 0), 0);
+
     return {
-      total: knowledge.length,
+      totalDocuments: this.knowledge.length,
       categories,
-      tags,
-      recentUploads: knowledge
-        .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
-        .slice(0, 5)
-        .map(k => ({
-          id: k.id,
-          title: k.title,
-          category: k.category,
-          timestamp: k.timestamp
-        }))
+      totalSize,
+      recentUploads: this.knowledge.filter(item =>
+        new Date(item.metadata.uploadDate) >= Date.now() - 7 * 24 * 60 * 60 * 1000
+      ).length
     };
   }
 }
 
-// Export an instance, not the class
-module.exports = new KnowledgeService();
+module.exports = KnowledgeService;

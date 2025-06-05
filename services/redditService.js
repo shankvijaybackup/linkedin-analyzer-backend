@@ -1,41 +1,47 @@
 // backend/services/redditService.js
+const axios = require('axios');
+
 class RedditService {
   constructor() {
     this.baseURL = 'https://www.reddit.com';
     this.userAgent = 'LinkedInAnalyzer/1.0';
     this.cache = new Map();
     this.cacheExpiry = 30 * 60 * 1000; // 30 minutes
+
+    this.googleApiKey = process.env.GOOGLE_API_KEY;
+    this.googleCx = process.env.GOOGLE_CX;
   }
 
   async getRedditIntent(jobTitle) {
     try {
-      console.log(`🧠 Analyzing Reddit intent signals for: ${jobTitle}`);
-      
-      // Check cache first
-      const cacheKey = jobTitle.toLowerCase().trim();
-      const cached = this.cache.get(cacheKey);
+      const key = jobTitle.toLowerCase().trim();
+      const cached = this.cache.get(key);
+
       if (cached && Date.now() - cached.timestamp < this.cacheExpiry) {
         console.log(`📋 Using cached Reddit analysis for: ${jobTitle}`);
         return cached.data;
       }
 
-      const intentSignals = this.generateRedditAnalysis(jobTitle);
-      
-      // Cache the result
-      this.cache.set(cacheKey, {
-        data: intentSignals,
-        timestamp: Date.now()
-      });
+      const roleBased = this.generateRedditAnalysis(jobTitle);
 
-      return intentSignals;
+      // If no strong match, fallback to Google CSE over Reddit
+      if (roleBased.signals < 5) {
+        const fallback = await this.fetchFallbackSignals(jobTitle);
+        roleBased.signals = fallback.signals;
+        roleBased.keywords = [...new Set([...roleBased.keywords, ...fallback.keywords])].slice(0, 10);
+        roleBased.discussions = fallback.sources.map(url => ({ subreddit: 'reddit.com', title: url, score: 0, engagement: 'unknown' }));
+      }
+
+      this.cache.set(key, { data: roleBased, timestamp: Date.now() });
+      return roleBased;
     } catch (error) {
       console.error('❌ Reddit intent analysis failed:', error.message);
       return {
         jobTitle,
         signals: 0,
+        sentiment: 'neutral',
         painPoints: [],
         discussions: [],
-        sentiment: 'neutral',
         keywords: [],
         error: 'Analysis unavailable',
         analysisDate: new Date().toISOString()
@@ -45,154 +51,106 @@ class RedditService {
 
   generateRedditAnalysis(jobTitle) {
     const t = jobTitle.toLowerCase();
-    const baseAnalysis = {
+    const base = {
       jobTitle,
       analysisDate: new Date().toISOString(),
-      source: 'simulated_reddit_analysis'
+      sentiment: 'solution_seeking',
+      source: 'heuristic'
     };
 
-    // C-Level and VP Analysis
     if (t.includes('cio') || t.includes('cto') || t.includes('chief')) {
       return {
-        ...baseAnalysis,
+        ...base,
         signals: 9,
-        painPoints: [
-          'Digital transformation initiatives stalling',
-          'Legacy system modernization challenges',
-          'ROI pressure on technology investments',
-          'Talent acquisition difficulties'
-        ],
+        painPoints: ['Digital transformation stalls', 'Legacy modernization', 'Cloud cost visibility', 'Scaling AI automation'],
         discussions: [
-          { subreddit: 'CIO', title: 'ServiceNow implementation lessons learned', score: 156, engagement: 'high' },
-          { subreddit: 'sysadmin', title: 'Enterprise automation strategies that actually work', score: 243, engagement: 'high' },
-          { subreddit: 'ITManagement', title: 'Justifying ITSM platform costs to board', score: 89, engagement: 'medium' }
+          { subreddit: 'CIO', title: 'How CIOs think about AI platforms', score: 180, engagement: 'high' }
         ],
-        sentiment: 'solution_seeking',
-        keywords: ['automation', 'modernization', 'roi', 'enterprise', 'digital transformation'],
-        urgency: 'high',
-        budgetCycle: 'Q4_planning'
+        keywords: ['automation', 'modernization', 'ROI', 'digital', 'enterprise']
       };
     }
 
-    // VP Level Analysis
     if (t.includes('vp') || t.includes('vice president')) {
       return {
-        ...baseAnalysis,
+        ...base,
         signals: 8,
-        painPoints: [
-          'Team productivity bottlenecks',
-          'Cross-department workflow inefficiencies',
-          'Reporting and visibility gaps',
-          'Vendor management complexity'
-        ],
+        painPoints: ['Team productivity', 'Workflow gaps', 'Reporting', 'Cross-team collaboration'],
         discussions: [
-          { subreddit: 'ITManagers', title: 'Streamlining IT operations across departments', score: 178, engagement: 'high' },
-          { subreddit: 'technology', title: 'Best practices for service management', score: 134, engagement: 'medium' },
-          { subreddit: 'BusinessIntelligence', title: 'KPI tracking for IT teams', score: 67, engagement: 'medium' }
+          { subreddit: 'ITManagers', title: 'Streamlining IT operations', score: 130, engagement: 'medium' }
         ],
-        sentiment: 'frustrated',
-        keywords: ['productivity', 'workflow', 'visibility', 'operations', 'efficiency'],
-        urgency: 'medium-high',
-        budgetCycle: 'annual_review'
+        keywords: ['efficiency', 'visibility', 'KPIs', 'workflow']
       };
     }
 
-    // Director Level Analysis
     if (t.includes('director') || t.includes('head of')) {
       return {
-        ...baseAnalysis,
+        ...base,
         signals: 7,
-        painPoints: [
-          'Manual process overhead',
-          'Ticket volume management',
-          'Team burnout from repetitive tasks',
-          'SLA compliance challenges'
-        ],
+        painPoints: ['Manual work', 'Burnout', 'SLAs', 'Automation deficit'],
         discussions: [
-          { subreddit: 'ITManagers', title: 'Reducing manual ticket routing', score: 124, engagement: 'high' },
-          { subreddit: 'sysadmin', title: 'Automation wins that saved our sanity', score: 298, engagement: 'very_high' },
-          { subreddit: 'ITIL', title: 'SLA improvements through workflow automation', score: 85, engagement: 'medium' }
+          { subreddit: 'sysadmin', title: 'Reducing repetitive requests', score: 110, engagement: 'medium' }
         ],
-        sentiment: 'solution_seeking',
-        keywords: ['automation', 'ticketing', 'workflow', 'sla', 'efficiency'],
-        urgency: 'medium',
-        budgetCycle: 'quarterly'
+        keywords: ['automation', 'sla', 'volume', 'repetition']
       };
     }
 
-    // Manager Level Analysis
     if (t.includes('manager') || t.includes('lead')) {
       return {
-        ...baseAnalysis,
+        ...base,
         signals: 6,
-        painPoints: [
-          'Daily operational firefighting',
-          'Limited visibility into team workload',
-          'Manual reporting requirements',
-          'User satisfaction concerns'
-        ],
+        painPoints: ['Firefighting', 'Manual updates', 'Low self-service adoption'],
         discussions: [
-          { subreddit: 'ITManagers', title: 'Tools to reduce L1 support volume', score: 167, engagement: 'high' },
-          { subreddit: 'sysadmin', title: 'Self-service portal implementations', score: 203, engagement: 'high' },
-          { subreddit: 'Help Desk', title: 'Metrics that matter for support teams', score: 92, engagement: 'medium' }
+          { subreddit: 'HelpDesk', title: 'Improving user experience', score: 90, engagement: 'medium' }
         ],
-        sentiment: 'problem_aware',
-        keywords: ['support', 'self-service', 'metrics', 'workload', 'user satisfaction'],
-        urgency: 'medium',
-        budgetCycle: 'departmental'
+        keywords: ['support', 'self-service', 'tickets', 'workflow']
       };
     }
 
-    // Senior/Specialist Level Analysis
     if (t.includes('senior') || t.includes('specialist') || t.includes('analyst')) {
       return {
-        ...baseAnalysis,
+        ...base,
         signals: 5,
-        painPoints: [
-          'Repetitive manual tasks',
-          'Knowledge sharing challenges',
-          'Tool fragmentation',
-          'Career development concerns'
-        ],
+        painPoints: ['Tool fatigue', 'Knowledge gaps', 'Career mobility'],
         discussions: [
-          { subreddit: 'sysadmin', title: 'Automating routine maintenance tasks', score: 234, engagement: 'high' },
-          { subreddit: 'ITCareerQuestions', title: 'Skills for IT automation specialists', score: 145, engagement: 'medium' },
-          { subreddit: 'technology', title: 'Knowledge management best practices', score: 78, engagement: 'medium' }
+          { subreddit: 'ITCareerQuestions', title: 'Best upskilling path for IT', score: 70, engagement: 'medium' }
         ],
-        sentiment: 'learning_oriented',
-        keywords: ['automation', 'skills', 'tools', 'maintenance', 'knowledge'],
-        urgency: 'low-medium',
-        budgetCycle: 'skill_development'
+        keywords: ['knowledge', 'learning', 'tools', 'maintenance']
       };
     }
 
-    // Default/General Analysis
     return {
-      ...baseAnalysis,
-      signals: 4,
-      painPoints: [
-        'General operational inefficiencies',
-        'Process improvement opportunities',
-        'Technology adoption challenges'
-      ],
-      discussions: [
-        { subreddit: 'technology', title: 'Service automation trends', score: 112, engagement: 'medium' },
-        { subreddit: 'ITSupport', title: 'Improving user experience', score: 89, engagement: 'medium' }
-      ],
-      sentiment: 'neutral',
-      keywords: ['efficiency', 'processes', 'technology', 'improvement'],
-      urgency: 'low',
-      budgetCycle: 'standard'
+      ...base,
+      signals: 3,
+      painPoints: ['General inefficiencies'],
+      discussions: [],
+      keywords: []
     };
   }
 
-  // Helper method to clear cache
+  async fetchFallbackSignals(jobTitle) {
+    try {
+      console.log(`🌐 Using Google fallback for: ${jobTitle}`);
+      const q = `Reddit "${jobTitle}" pain points IT automation`;
+      const url = `https://www.googleapis.com/customsearch/v1?q=${encodeURIComponent(q)}&key=${this.googleApiKey}&cx=${this.googleCx}`;
+      const res = await axios.get(url);
+      const items = res.data.items || [];
+      const snippets = items.flatMap(i => (i.snippet || '').match(/\b(\w{6,})\b/g) || []);
+      return {
+        signals: items.length,
+        keywords: [...new Set(snippets)].slice(0, 8),
+        sources: items.map(i => i.link)
+      };
+    } catch (err) {
+      console.warn('🛑 Google fallback failed:', err.message);
+      return { signals: 0, keywords: [], sources: [] };
+    }
+  }
+
   clearCache() {
     this.cache.clear();
     console.log('🧹 Reddit analysis cache cleared');
   }
 
-  // Helper method to get cache stats
   getCacheStats() {
     return {
       entries: this.cache.size,

@@ -6,18 +6,18 @@ const fs = require('fs');
 const path = require('path');
 const LinkedInService = require('../services/linkedinService');
 const AIService = require('../services/aiService');
-const RedditService = require('../services/redditService'); // Fixed import
+const RedditService = require('../services/redditService');
 
 const router = express.Router();
 const upload = multer({ dest: 'uploads/', limits: { fileSize: 5 * 1024 * 1024 } });
 
 const linkedinService = new LinkedInService();
 const aiService = new AIService();
-const redditService = new RedditService(); // Fixed instantiation
+const redditService = new RedditService();
 const analysisResults = new Map();
 const analysisTimeouts = new Map();
 
-// Start new analysis
+// Create analysis
 router.post('/', async (req, res) => {
   try {
     const { linkedinUrl } = req.body;
@@ -29,16 +29,16 @@ router.post('/', async (req, res) => {
     analysisResults.set(analysisId, {
       status: 'started',
       progress: 0,
-      stage: 'Initializing analysis...',
+      stage: 'Initializing...',
       startTime: new Date().toISOString()
     });
 
     analysisTimeouts.set(analysisId, setTimeout(() => {
       analysisResults.delete(analysisId);
       analysisTimeouts.delete(analysisId);
-    }, 60 * 60 * 1000)); // 1 hour cleanup
+    }, 60 * 60 * 1000)); // 1 hour expiry
 
-    res.json({ analysisId, status: 'started', message: 'Analysis initiated successfully' });
+    res.json({ analysisId, status: 'started' });
 
     performAnalysis(linkedinUrl, analysisId).catch(err => {
       analysisResults.set(analysisId, {
@@ -47,74 +47,66 @@ router.post('/', async (req, res) => {
         timestamp: new Date().toISOString()
       });
     });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to start analysis' });
+  } catch (err) {
+    res.status(500).json({ error: 'Internal error' });
   }
 });
 
-// Check status
 router.get('/:id', (req, res) => {
   const { id } = req.params;
-  const memory = analysisResults.get(id);
-  if (memory) return res.json(memory);
-  const filePath = path.resolve('data', `${id}.json`);
-  if (fs.existsSync(filePath)) return res.json(JSON.parse(fs.readFileSync(filePath, 'utf-8')));
+  const result = analysisResults.get(id);
+  if (result) return res.json(result);
+
+  const file = path.resolve('data', `${id}.json`);
+  if (fs.existsSync(file)) return res.json(JSON.parse(fs.readFileSync(file, 'utf-8')));
+
   return res.status(404).json({ error: 'Analysis not found or expired' });
 });
 
-router.get('/json/:id', async (req, res) => {
+router.get('/json/:id', (req, res) => {
   const { id } = req.params;
-  const filePath = path.resolve('data', `${id}.json`);
-  if (fs.existsSync(filePath)) return res.json(JSON.parse(fs.readFileSync(filePath, 'utf-8')));
-  return res.status(404).json({ error: 'Not found', message: `Analysis ${id} not found` });
+  const file = path.resolve('data', `${id}.json`);
+  if (fs.existsSync(file)) return res.json(JSON.parse(fs.readFileSync(file, 'utf-8')));
+  return res.status(404).json({ error: 'Not found' });
 });
 
-async function ensureDataDirectory() {
-  const dataDir = path.resolve('data');
-  if (!fs.existsSync(dataDir)) {
-    fs.mkdirSync(dataDir, { recursive: true });
-    console.log('📁 Created data directory');
-  }
-}
-
-ensureDataDirectory();
-
+// Main processing logic
 async function performAnalysis(linkedinUrl, analysisId) {
   try {
-    updateAnalysisStatus(analysisId, { status: 'processing', progress: 10, stage: 'Extracting LinkedIn Profile Data' });
+    updateAnalysisStatus(analysisId, { progress: 10, stage: '🔍 Extracting LinkedIn Profile' });
     const rawProfile = await linkedinService.getPersonDetails(linkedinUrl);
     const profile = linkedinService.formatProfileData(rawProfile);
 
-    updateAnalysisStatus(analysisId, { status: 'processing', progress: 25, stage: 'Fetching Company Intelligence' });
-    const companyUrl = rawProfile.experiences?.[0]?.company_linkedin_profile_url || rawProfile.experiences?.[0]?.company_linkedin_url || null;
-    const company = companyUrl ? await linkedinService.getCompanyDetails(companyUrl) : linkedinService.getMockCompanyData();
+    updateAnalysisStatus(analysisId, { progress: 25, stage: '🏢 Enriching Company Context' });
+    const companyUrl = rawProfile.experiences?.[0]?.company_linkedin_profile_url || null;
+    const company = companyUrl
+      ? await linkedinService.getCompanyDetails(companyUrl)
+      : linkedinService.getMockCompanyData();
 
-    updateAnalysisStatus(analysisId, { status: 'processing', progress: 40, stage: 'Analyzing Strategic Context' });
-    const redditIntent = await redditService.getRedditIntent(profile.title); // Fixed method call
+    updateAnalysisStatus(analysisId, { progress: 40, stage: '🔬 Analyzing Reddit Intent Signals' });
+    const redditIntent = await redditService.getRedditIntent(profile.title);
 
-    updateAnalysisStatus(analysisId, { status: 'processing', progress: 60, stage: 'Generating Strategic Summary' });
-    const strategicSummary = await aiService.summarizeIntent(profile, company, redditIntent);
+    updateAnalysisStatus(analysisId, { progress: 60, stage: '📊 Creating Strategic Summary' });
+    const summary = await aiService.summarizeIntent(profile, company, redditIntent);
 
-    updateAnalysisStatus(analysisId, { status: 'processing', progress: 80, stage: 'Creating Personalized Outreach' });
+    updateAnalysisStatus(analysisId, { progress: 80, stage: '✍️ Generating DISC Outreach' });
     const tonePersona = aiService.inferDISC(profile);
-    const outreachMessages = await aiService.generateOutreach(profile, strategicSummary, company, redditIntent, tonePersona);
-    
-    // Ensure outreach messages is an array
-    const validOutreach = Array.isArray(outreachMessages) ? outreachMessages : [];
+    const outreach = await aiService.generateOutreach(profile, summary, company, redditIntent, tonePersona);
+    const outreachMessages = Array.isArray(outreach) ? outreach : [];
 
-    updateAnalysisStatus(analysisId, { status: 'processing', progress: 95, stage: 'Finalizing Analysis' });
+    updateAnalysisStatus(analysisId, { progress: 95, stage: '📦 Finalizing and Saving' });
     const metrics = calculateMetrics(profile, company, redditIntent);
 
-    const finalResult = {
+    const final = {
       status: 'completed',
       progress: 100,
-      stage: 'Analysis Complete',
+      stage: '✅ Done',
       data: {
         profile,
         company,
-        strategicSummary,
-        outreachMessages: validOutreach,
+        strategicSummary: summary,
         redditIntent,
+        outreachMessages,
         metrics,
         metadata: {
           analysisId,
@@ -126,23 +118,31 @@ async function performAnalysis(linkedinUrl, analysisId) {
       completedAt: new Date().toISOString()
     };
 
-    analysisResults.set(analysisId, finalResult);
+    analysisResults.set(analysisId, final);
     await ensureDataDirectory();
-    fs.writeFileSync(path.resolve('data', `${analysisId}.json`), JSON.stringify(finalResult, null, 2));
-    console.log(`✅ Analysis ${analysisId} completed successfully`);
-  } catch (error) {
+    fs.writeFileSync(path.resolve('data', `${analysisId}.json`), JSON.stringify(final, null, 2));
+    console.log(`✅ Completed analysis: ${analysisId}`);
+  } catch (err) {
     updateAnalysisStatus(analysisId, {
       status: 'error',
-      error: error.message,
-      errorCode: error.code || 'ANALYSIS_ERROR',
+      error: err.message,
       timestamp: new Date().toISOString()
     });
   }
 }
 
+// Utilities
 function updateAnalysisStatus(id, updates) {
   const current = analysisResults.get(id) || {};
   analysisResults.set(id, { ...current, ...updates });
+}
+
+async function ensureDataDirectory() {
+  const dir = path.resolve('data');
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+    console.log('📁 Created data directory');
+  }
 }
 
 function calculateMetrics(profile, company, redditIntent) {
@@ -169,19 +169,19 @@ function calculateDecisionAuthority(title) {
 }
 
 function calculateBudgetInfluence(title, company) {
-  const score = calculateDecisionAuthority(title);
+  const base = calculateDecisionAuthority(title);
   const size = company.company_size || 0;
-  if (size > 1000) return Math.min(score + 10, 100);
-  if (size > 500) return Math.min(score + 5, 100);
-  return score;
+  if (size > 1000) return Math.min(base + 10, 100);
+  if (size > 500) return Math.min(base + 5, 100);
+  return base;
 }
 
 function calculateBuyingIntent(profile, redditIntent) {
   let score = 60;
-  ['digital transformation', 'modernization', 'cloud', 'automation', 'efficiency'].forEach(k => {
-    if ((profile.summary || '').toLowerCase().includes(k)) score += 5;
+  ['digital transformation', 'modernization', 'cloud', 'automation'].forEach(term => {
+    if ((profile.summary || '').toLowerCase().includes(term)) score += 5;
   });
-  if (redditIntent && redditIntent.signals > 0) score += 10;
+  if (redditIntent?.signals > 0) score += 10;
   return Math.min(score, 100);
 }
 
@@ -189,7 +189,7 @@ function calculateEngagementScore(profile) {
   let score = 70;
   if (profile.connections > 500) score += 10;
   if (profile.followerCount > 1000) score += 5;
-  if (profile.summary && profile.summary.length > 200) score += 5;
+  if (profile.summary?.length > 200) score += 5;
   return Math.min(score, 100);
 }
 
